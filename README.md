@@ -298,6 +298,10 @@ Please see the [Changelog](https://github.com/codegrue/card_settings/blob/master
 
 ## Contributions
 
+<a href="https://github.com/codegrue/card_settings/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=codegrue/card_settings" />
+</a>
+
 If you find a bug or want a feature, but don't know how to fix/implement it, please fill an [issue](https://github.com/codegrue/card_settings/issues).
 
 If you fixed a bug or implemented a new feature, please send a [pull request](https://github.com/codegrue/card_settings/pulls).
