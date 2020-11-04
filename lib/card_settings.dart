@@ -7,6 +7,7 @@ library card_settings;
 export 'helpers/converter_functions.dart';
 export 'widgets/action_fields/card_settings_button.dart';
 export 'widgets/card_field_layout.dart';
+export 'widgets/card_settings_widget.dart';
 export 'widgets/card_settings_field.dart';
 export 'widgets/card_settings_panel.dart';
 export 'widgets/information_fields/card_settings_header.dart';
@@ -17,6 +18,7 @@ export 'widgets/numeric_fields/card_settings_int.dart';
 export 'widgets/numeric_fields/card_settings_switch.dart';
 export 'widgets/picker_fields/card_settings_color_picker.dart';
 export 'widgets/picker_fields/card_settings_date_picker.dart';
+export 'widgets/picker_fields/card_settings_file_picker.dart';
 export 'widgets/picker_fields/card_settings_list_picker.dart';
 export 'widgets/picker_fields/card_settings_radio_picker.dart';
 export 'widgets/picker_fields/card_settings_selection_picker.dart';
@@ -31,6 +33,10 @@ export 'widgets/text_fields/card_settings_password.dart';
 export 'widgets/text_fields/card_settings_phone.dart';
 export 'widgets/text_fields/card_settings_text.dart';
 export 'widgets/numeric_fields/card_settings_slider.dart';
+export 'widgets/card_settings_widget.dart';
 
-const double kPickerSheetHeight = 216.0;
-const double kPickerItemHeight = 32.0;
+/// this is the default height for the cupertino scroll wheel
+const double kCupertinoPickerSheetHeight = 216.0;
+
+/// this is the default height for a single item in cupertino picker
+const double kCupertinoPickerItemHeight = 32.0;

@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../card_settings.dart';
-import '../../models/common_card_field_attributes.dart';
+import '../../interfaces/common_field_properties.dart';
+import '../../interfaces/text_field_properties.dart';
 
 /// This is a password field. It obscures the entered text.
 class CardSettingsPassword extends CardSettingsText
-    implements CommonCardFieldAttributes {
+    implements ICommonFieldProperties, ITextFieldProperties {
   CardSettingsPassword({
     Key key,
     String label: 'Password',
@@ -27,18 +28,22 @@ class CardSettingsPassword extends CardSettingsText
     bool autofocus: false,
     bool obscureText: true,
     bool autocorrect: false,
-    bool autovalidate: false,
+    // bool autovalidate: false,
+    AutovalidateMode autovalidateMode : AutovalidateMode.onUserInteraction,
     FormFieldValidator<String> validator,
     FormFieldSetter<String> onSaved,
     ValueChanged<String> onChanged,
     TextEditingController controller,
     FocusNode focusNode,
+    TextInputAction inputAction,
+    FocusNode inputActionNode,
     TextInputType keyboardType = TextInputType.text,
     TextStyle style,
     bool maxLengthEnforced: true,
     ValueChanged<String> onFieldSubmitted,
     List<TextInputFormatter> inputFormatters,
-    bool showMaterialonIOS: false,
+    bool showMaterialonIOS,
+    EdgeInsetsGeometry fieldPadding,
   }) : super(
           key: key,
           label: label,
@@ -46,6 +51,7 @@ class CardSettingsPassword extends CardSettingsText
           labelAlign: labelAlign,
           hintText: hintText,
           showMaterialonIOS: showMaterialonIOS,
+          fieldPadding: fieldPadding,
           contentAlign: contentAlign,
           contentOnNewLine: contentOnNewLine,
           initialValue: initialValue,
@@ -57,12 +63,15 @@ class CardSettingsPassword extends CardSettingsText
           autofocus: autofocus,
           obscureText: obscureText,
           autocorrect: autocorrect,
-          autovalidate: autovalidate,
+          // autovalidate: autovalidate,
+          autovalidateMode: autovalidateMode,
           validator: validator,
           onSaved: onSaved,
           onChanged: onChanged,
           controller: controller,
           focusNode: focusNode,
+          inputAction: inputAction,
+          inputActionNode: inputActionNode,
           keyboardType: keyboardType,
           style: style,
           maxLengthEnforced: maxLengthEnforced,

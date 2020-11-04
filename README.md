@@ -1,40 +1,54 @@
 # Card Settings
 
 [![Pub Package](https://img.shields.io/pub/v/card_settings.svg)](https://pub.dartlang.org/packages/card_settings)
+[![GitHub stars](https://img.shields.io/github/stars/codegrue/card_settings?color=brightgreen)](https://github.com/codegrue/card_settings/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/codegrue/card_settings)](https://github.com/codegrue/card_settings/network/members)
+![GitHub repo size](https://img.shields.io/github/repo-size/codegrue/card_settings)
 
-A flutter package for building card based settings forms. This includes a library of pre-built form field widgets. The style is a bit like a cross between
-the cupertino settings screen and material design; The idea is it should be usable and intutive on both iOS and Android.
+[![CodeFactor](https://img.shields.io/codefactor/grade/github/codegrue/card_settings)](https://www.codefactor.io/repository/github/codegrue/card_settings)
+[![Coverage Status](https://coveralls.io/repos/github/codegrue/card_settings/badge.svg?branch=master)](https://coveralls.io/github/codegrue/card_settings?branch=master)
+[![Open Bugs](https://img.shields.io/github/issues-raw/codegrue/card_settings/bug?label=bugs&color=orange)](https://github.com/codegrue/card_settings/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
+[![Enhancement Requests](https://img.shields.io/github/issues-raw/codegrue/card_settings/enhancement?label=enhancements)](https://github.com/codegrue/card_settings/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement+)
+[![Closed Issues](https://img.shields.io/github/issues-closed-raw/codegrue/card_settings?color=lightgrey)](https://github.com/codegrue/card_settings/issues?q=is%3Aissue+is%3Aclosed)
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Donate-Buy%20Me%20A%20Coffee-yellow.svg)](https://www.buymeacoffee.com/CodeGrue)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/codegrue/card_settings/pulls)
+[![Contributors](https://img.shields.io/github/contributors/codegrue/card_settings)](https://github.com/codegrue/card_settings/graphs/contributors)
+[![License](https://img.shields.io/github/license/codegrue/card_settings?color=brightgreen)](https://github.com/codegrue/card_settings/blob/master/LICENSE)
+
+A flutter package for building settings forms. This includes a library of pre-built form field widgets. It supports both Material and Cupertino style.
 
 ![Screenshot](https://github.com/codegrue/card_settings/blob/master/images/example.png)
 
 This package consists of a CardSettings layout wrapper and a series of form field options including:
 
 - **Text Fields**
-  - _CardSettingsText_ - Basic text field
-  - _CardSettingsParagraph_ - Multiline text field with a counter
-  - _CardSettingsEmail_ - A text field pre-configured for email input
-  - _CardSettingsPassword_ - A text field pre-configured for passwords
-  - _CardSettingsPhone_ - A masked phone entry field (US style currently)
+  - `CardSettingsText` - Basic text field
+  - `CardSettingsParagraph` - Multiline text field with a counter
+  - `CardSettingsEmail` - A text field pre-configured for email input
+  - `CardSettingsPassword` - A text field pre-configured for passwords
+  - `CardSettingsPhone` - A masked phone entry field (US style currently)
 - **Numeric Fields**
-  - _CardSettingsDouble_ - Field for double precision numbers
-  - _CardSettingsInt_ - Field for integer numbers
-  - _CardSettingsCurrency_ - Field for currency entry
-  - _CardSettingsSwitch_ - Field for boolean state
+  - `CardSettingsDouble` - Field for double precision numbers
+  - `CardSettingsInt` - Field for integer numbers
+  - `CardSettingsCurrency` - Field for currency entry
+  - `CardSettingsSwitch` - Field for boolean state
 - **Pickers**
-  - _CardSettingsListPicker_ - Picker list of arbitrary options
-  - _CardSettingsNumberPicker_ - Picker list of numbers in a given range
-  - _CardSettingsRadioPicker_ - Single items picker with radio buttons
-  - _CardSettingsSelectionPicker_ - Single selection from a list with optional icons
-  - _CardSettingsCheckboxPicker_ - Select multiples from a list of available options
-  - _CardSettingsColorPicker_ - Picker for colors with three flavors: RGB, Material, and Block
-  - _CardSettingsDatePicker_ - Date Picker
-  - _CardSettingsTimePicker_ - Time Picker
-  - _CardSettingsDateTimePicker_ - Combo Date and Time Picker
+  - `CardSettingsListPicker` - Picker list of arbitrary options
+  - `CardSettingsNumberPicker` - Picker list of numbers in a given range
+  - `CardSettingsRadioPicker` - Single items picker with radio buttons
+  - `CardSettingsSelectionPicker` - Single selection from a list with optional icons
+  - `CardSettingsCheckboxPicker` - Select multiples from a list of available options
+  - `CardSettingsColorPicker` - Picker for colors with three flavors: RGB, Material, and Block
+  - `CardSettingsDatePicker` - Date Picker
+  - `CardSettingsTimePicker` - Time Picker
+  - `CardSettingsDateTimePicker` - Combo Date and Time Picker
+  - `CardSettingsFilePicker` - Upload a file from the device
 - **Informational Sections**
-  - _CardSettingsHeader_ - A control to put a header between form sections
-  - _CardSettingsInstructions_ - Informational read-only text
+  - `CardSettingsHeader` - A control to put a header between form sections
+  - `CardSettingsInstructions` - Informational read-only text
 - **Actions**
-  - _CardSettingsButton_ - Actions buttons for the form
+  - `CardSettingsButton` - Actions buttons for the form
 
 All fields support `validate`, `onChange`, `onSaved`, `autovalidate`, and `visible`.
 
@@ -59,36 +73,60 @@ All fields in this package are compatible with the standard Flutter Form widget.
       body: Form(
         key: _formKey,
         child: CardSettings(
-          children: <Widget>[
-            CardSettingsHeader(label: 'Favorite Book'),
-            CardSettingsText(
-              label: 'Title',
-              initialValue: title,
-              validator: (value) {
-                if (value == null || value.isEmpty) return 'Title is required.';
-              },
-              onSaved: (value) => title = value,
+          children: <CardSettingsSection>[
+            CardSettingsSection(
+              header: CardSettingsHeader(
+                label: 'Favorite Book',
+              ),
+              children: <CardSettingsWidget>[
+                CardSettingsText(
+                  label: 'Title',
+                  initialValue: title,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Title is required.';
+                  },
+                  onSaved: (value) => title = value,
+                ),
+                CardSettingsText(
+                  label: 'URL',
+                  initialValue: url,
+                  validator: (value) {
+                    if (!value.startsWith('http:')) return 'Must be a valid website.';
+                  },
+                  onSaved: (value) => url = value,
+                ),
+              ],
             ),
-            CardSettingsText(
-              label: 'URL',
-              initialValue: url,
-              validator: (value) {
-                if (!value.startsWith('http:')) return 'Must be a valid website.';
-              },
-              onSaved: (value) => url = value,
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 ```
 
+If you would like separate cards for each section, then use the `.sectioned` constructor:
+
+```dart
+        child: CardSettings.sectioned(
+          ...
+        ),
+```
+
 See the full demo example [here](https://pub.dartlang.org/packages/card_settings#-example-tab-).
 
 ### Theming
 
-The widgets support the material design theme. This example shows what global theme values to set to determine how the various elements appear.
+The style of the widgets can be either Material or Cupertino. There is a toggle on the CardSettings widget to globally change the style:
+
+```dart
+  return CardSettings(
+    showMaterialonIOS: true, // default is false
+  );
+```
+
+This also exists on each field widget, in case you want to control this more granularly.
+
+If you are using the Material design style, then the `MaterialApp` theme takes effect. This example shows what global theme values to set to determine how the various elements appear.
 
 ```dart
 class MyApp extends StatelessWidget {
@@ -99,17 +137,18 @@ class MyApp extends StatelessWidget {
       title: 'Card Settings Example',
       home: new HomePage(),
       theme: ThemeData(
-        accentColor: Colors.indigo[400], // background color of card headers
-        cardColor: Colors.white, // background color of fields
-        backgroundColor: Colors.indigo[100], // color outside the card
-        primaryColor: Colors.teal, // color of page header
-        buttonColor: Colors.lightBlueAccent[100], // background color of buttons
+        primaryColor: Colors.teal, // app header background
+        secondaryHeaderColor: Colors.indigo[400], // card header background
+        cardColor: Colors.white, // card field background
+        backgroundColor: Colors.indigo[100], // app background color
+        buttonColor: Colors.lightBlueAccent[100], // button background color
         textTheme: TextTheme(
-          button: TextStyle(color: Colors.deepPurple[900]), // style of button text
-          subtitle1: TextStyle(color: Colors.grey[800]), // style of input text
+          button: TextStyle(color: Colors.deepPurple[900]), // button text
+          subtitle1: TextStyle(color: Colors.grey[800]), // input text
+          headline6: TextStyle(color: Colors.white), // card header text
         ),
         primaryTextTheme: TextTheme(
-          headline6: TextStyle(color: Colors.lightBlue[50]), // style for headers
+          headline6: TextStyle(color: Colors.lightBlue[50]), // app header text
         ),
         inputDecorationTheme: InputDecorationTheme(
           labelStyle: TextStyle(color: Colors.indigo[400]), // style for labels
@@ -127,7 +166,7 @@ Or if you want to apply a different theme to the `CardSettings` hierarchy only, 
   Theme(
     data: Theme.of(context).copyWith(
       primaryTextTheme: TextTheme(
-        headline6: TextStyle(color: Colors.lightBlue[50]), // style for headers
+        headline6: TextStyle(color: Colors.lightBlue[50]), // app header text
       ),
       inputDecorationTheme: InputDecorationTheme(
         labelStyle: TextStyle(color: Colors.deepPurple), // style for labels
@@ -139,7 +178,38 @@ Or if you want to apply a different theme to the `CardSettings` hierarchy only, 
   )
 ```
 
-Please see https://pub.dev/packages/flutter_material_pickers#-readme-tab- for information on how to theme the dialog popups.
+Please see <https://pub.dev/packages/flutter_material_pickers#-readme-tab-> for information on how to theme the dialog popups.
+
+### Card Style
+
+By default, in Material mode, the content is inside a Card or Cards (if sectioned).
+
+![Carded](https://github.com/codegrue/card_settings/blob/master/images/carded_example.png)
+
+If you would rather just have a flat style with no border, set `cardless` to false.
+
+![Cardless](https://github.com/codegrue/card_settings/blob/master/images/cardless_example.png)
+
+```dart
+  return CardSettings(
+    cardless: true; // default is false
+  );
+```
+
+This has no effect in Cupertino mode, as that doesn't have a card to begin with.
+
+You can also change the actual card styleing through the theme for example:
+
+![Custom](https://github.com/codegrue/card_settings/blob/master/images/custom_border_example.png)
+
+```dart
+  cardTheme: CardTheme(
+    shape: RoundedRectangleBorder(
+      side: BorderSide(width: 2, color: Colors.orange),
+      borderRadius: BorderRadius.circular(20),
+    ),
+  ),
+```
 
 ### Global Properties
 
@@ -169,6 +239,25 @@ The `labelAlign` and `contentAlign` properties are also available on each field,
     labelAlign: TextAlign.left,
     contentAlign: TextAlign.right,
   )
+```
+
+### Headers
+
+`CardSettingsHeader` provides properties to set the color, height, and label alignment. However, if you wish to completely override the default header style and replace it with something custom, you can use the `child` property to pass in your own widget tree:
+
+```dart
+header: CardSettingsHeader(
+  child: Container(
+    height: 80,
+    child: Row(
+      children: [
+        Expanded(child: Divider(color: Colors.purple, thickness: 5)),
+        Text('Custom Header', style: TextStyle(fontSize: 20)),
+        Expanded(child: Divider(color: Colors.purple, thickness: 5)),
+      ],
+    ),
+  ),
+),
 ```
 
 ### Dynamic Visibility
@@ -268,6 +357,16 @@ CardSettings(
 
 The `CardSettingsField` is the basis of all other fields and can be used to build unique fields outside of this library. Its purpose is to govern layout with consistent decorations. The best way to make a custom field is to inherit from `FormField<T>`, which will manage the state of your field. The cleanest example of this is the `CardSettingsSwitch` widget. All you have to do is provide your custom widgets in the `content` property.
 
+### Custom Widgets
+
+If you wish to provide a custom widget that is _not_ a field type layout, you need to implement the `CardSettingsWidget` interface as so:
+
+```dart
+class CardSettingsHeader extends StatelessWidget implements CardSettingsWidget {
+  ...
+}
+```
+
 ## Screenshots
 
 |                                         Material                                          |                                       Cupertino                                       |
@@ -288,13 +387,6 @@ This widget set relies on these external third-party components:
 ## Changelog
 
 Please see the [Changelog](https://github.com/codegrue/card_settings/blob/master/CHANGELOG.md) page to know what's recently changed.
-
-## Authors
-
-- Jeff Jorczak <jeff@jorczak.com>
-- Rody Davis Jr <rody.davis.jr@gmail.com>
-
-**NOTE: We would like a third author for redundency. Please contect us if interested.**
 
 ## Contributions
 

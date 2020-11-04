@@ -5,27 +5,39 @@ import 'package:card_settings/helpers/platform_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../card_settings_panel.dart';
+import '../card_settings_widget.dart';
+
 /// This is a read only section of text
-class CardSettingsInstructions extends StatelessWidget {
+class CardSettingsInstructions extends StatelessWidget
+    implements CardSettingsWidget {
   CardSettingsInstructions({
     this.text: 'Instructions here...',
     this.backgroundColor,
     this.textColor,
-    this.showMaterialonIOS = false,
+    this.showMaterialonIOS,
+    this.visible = true,
+    this.fieldPadding,
   });
 
   final String text;
   final Color backgroundColor;
   final Color textColor;
+  @override
   final bool showMaterialonIOS;
+  @override
+  final bool visible;
+  final EdgeInsetsGeometry fieldPadding;
 
   @override
   Widget build(BuildContext context) {
+    if (!visible) return Container();
+
     TextStyle textStyle = Theme.of(context)
         .primaryTextTheme
         .caption
         .copyWith(color: textColor ?? Theme.of(context).accentColor);
-    if (showCupertino(showMaterialonIOS)) {
+    if (showCupertino(context, showMaterialonIOS)) {
       return Container(
         padding: EdgeInsets.only(top: 8.0, left: 8.0),
         child: Text(
@@ -35,15 +47,19 @@ class CardSettingsInstructions extends StatelessWidget {
         // color: CupertinoColors.lightBackgroundGray,
       );
     } else
-      return materialInstruction(context, textStyle);
+      return _materialInstruction(context, textStyle);
   }
 
-  Widget materialInstruction(BuildContext context, TextStyle textStyle) {
+  Widget _materialInstruction(BuildContext context, TextStyle textStyle) {
+    EdgeInsetsGeometry _fieldPadding = (fieldPadding ??
+        CardSettings.of(context).fieldPadding ??
+        EdgeInsets.all(14.0));
+
     return Container(
       margin: EdgeInsets.all(0.0),
       decoration:
           BoxDecoration(color: backgroundColor ?? Theme.of(context).cardColor),
-      padding: EdgeInsets.only(left: 14.0, top: 8.0, right: 14.0, bottom: 8.0),
+      padding: _fieldPadding,
       child: Row(
         children: <Widget>[
           Text(

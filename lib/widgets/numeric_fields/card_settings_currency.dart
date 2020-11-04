@@ -4,15 +4,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:intl/intl.dart';
 
 import '../../card_settings.dart';
+import '../../interfaces/common_field_properties.dart';
 
 /// This is a currency field.
-class CardSettingsCurrency extends StatefulWidget {
+class CardSettingsCurrency extends StatefulWidget
+    implements ICommonFieldProperties {
   CardSettingsCurrency({
     Key key,
     this.label: 'Label',
     this.labelAlign,
+    this.labelWidth,
     this.contentAlign,
     this.initialValue: 0.0,
     this.icon,
@@ -27,30 +31,43 @@ class CardSettingsCurrency extends StatefulWidget {
     this.autofocus: false,
     this.obscureText: false,
     this.autocorrect: false,
-    this.autovalidate: false,
+    //this.autovalidate: false,
+    this.autovalidateMode: AutovalidateMode.onUserInteraction,
     this.validator,
     this.onSaved,
     this.onChanged,
     this.controller,
     this.focusNode,
+    this.inputAction,
+    this.inputActionNode,
     this.keyboardType,
     this.style,
     this.maxLengthEnforced: true,
     this.onFieldSubmitted,
     this.inputFormatters,
-    this.showMaterialonIOS = false,
+    this.showMaterialonIOS,
+    this.fieldPadding,
+    this.locale,
   });
 
+  @override
   final String label;
 
+  @override
   final TextAlign labelAlign;
 
+  @override
+  final double labelWidth;
+
+  @override
   final TextAlign contentAlign;
 
   final double initialValue;
 
+  @override
   final Icon icon;
 
+  @override
   final Widget requiredIndicator;
 
   final String currencySymbol;
@@ -63,6 +80,7 @@ class CardSettingsCurrency extends StatefulWidget {
 
   final int maxLength;
 
+  @override
   final bool visible;
 
   final bool enabled;
@@ -73,17 +91,28 @@ class CardSettingsCurrency extends StatefulWidget {
 
   final bool autocorrect;
 
+/*   @override
   final bool autovalidate;
+ */
+  @override
+  final AutovalidateMode autovalidateMode;
 
+  @override
   final FormFieldValidator<double> validator;
 
+  @override
   final FormFieldSetter<double> onSaved;
 
+  @override
   final ValueChanged<double> onChanged;
 
   final TextEditingController controller;
 
   final FocusNode focusNode;
+
+  final TextInputAction inputAction;
+
+  final FocusNode inputActionNode;
 
   final TextInputType keyboardType;
 
@@ -95,15 +124,21 @@ class CardSettingsCurrency extends StatefulWidget {
 
   final List<TextInputFormatter> inputFormatters;
 
+  final Locale locale;
+
+  @override
   final bool showMaterialonIOS;
 
   @override
-  CardSettingsCurrencyState createState() {
-    return CardSettingsCurrencyState();
+  final EdgeInsetsGeometry fieldPadding;
+
+  @override
+  _CardSettingsCurrencyState createState() {
+    return _CardSettingsCurrencyState();
   }
 }
 
-class CardSettingsCurrencyState extends State<CardSettingsCurrency> {
+class _CardSettingsCurrencyState extends State<CardSettingsCurrency> {
   MoneyMaskedTextController _moneyController;
 
   @override
@@ -119,10 +154,18 @@ class CardSettingsCurrencyState extends State<CardSettingsCurrency> {
 
   @override
   Widget build(BuildContext context) {
+    Locale myLocale = widget.locale ?? Localizations.localeOf(context);
+
+    var pattern = "#,###.##";
+
+    var formatter = NumberFormat(pattern, myLocale.languageCode);
+
     return CardSettingsText(
       showMaterialonIOS: widget?.showMaterialonIOS,
+      fieldPadding: widget.fieldPadding,
       label: widget.label,
       labelAlign: widget.labelAlign,
+      labelWidth: widget?.labelWidth,
       contentAlign: widget.contentAlign,
       initialValue: widget.initialValue.toString(),
       unitLabel: widget.currencyName,
@@ -135,12 +178,15 @@ class CardSettingsCurrencyState extends State<CardSettingsCurrency> {
       autofocus: widget.autofocus,
       obscureText: widget.obscureText,
       autocorrect: widget.autocorrect,
-      autovalidate: widget.autovalidate,
-      validator: _safeValidator,
-      onSaved: _safeOnSaved,
-      onChanged: _safeOnChanged,
+      // autovalidate: widget.autovalidate,
+      autovalidateMode: widget.autovalidateMode,
+      validator: (val) => _safeValidator(val, formatter),
+      onSaved: (val) => _safeOnSaved(val, formatter),
+      onChanged: (val) => _safeOnChanged(val, formatter),
       controller: widget.controller ?? _moneyController,
       focusNode: widget.focusNode,
+      inputAction: widget.inputAction,
+      inputActionNode: widget.inputActionNode,
       keyboardType: widget.keyboardType ??
           TextInputType.numberWithOptions(decimal: false),
       style: widget.style,
@@ -150,21 +196,26 @@ class CardSettingsCurrencyState extends State<CardSettingsCurrency> {
     );
   }
 
-  String _safeValidator(String value) {
+  String _safeValidator(String value, NumberFormat formatter) {
     if (widget.validator == null) return null;
-    return widget.validator(intelligentCast<double>(value));
+    var number = formatter.parse(value);
+    return widget.validator(intelligentCast<double>(number));
   }
 
-  void _safeOnSaved(String value) {
+  void _safeOnSaved(String value, NumberFormat formatter) {
     if (widget.onSaved == null) return;
-    widget.onSaved(intelligentCast<double>(value));
+    var number = formatter.parse(value);
+    widget.onSaved(intelligentCast<double>(number));
   }
 
-  void _safeOnChanged(String value) {
+  void _safeOnChanged(String value, NumberFormat formatter) {
     if (widget.onChanged == null) return;
-    if (_moneyController != null)
+
+    if (_moneyController != null) {
       widget.onChanged(_moneyController.numberValue);
-    else
-      widget.onChanged(intelligentCast<double>(value));
+    } else {
+      var number = formatter.parse(value);
+      widget.onChanged(intelligentCast<double>(number));
+    }
   }
 }

@@ -4,9 +4,14 @@
 import 'package:card_settings/card_settings.dart';
 import 'package:flutter/material.dart';
 
+import '../interfaces/common_field_properties.dart';
+
+const unimplemented = "implement in the wrapper widget";
+
 /// This is the basic layout of a field in a CardSettings view. Typcially, it
 /// will not be used directly.
-class CardSettingsField extends StatelessWidget {
+class CardSettingsField extends StatelessWidget
+    implements ICommonFieldProperties {
   CardSettingsField({
     this.label: 'Label',
     this.content,
@@ -17,33 +22,57 @@ class CardSettingsField extends StatelessWidget {
     this.unitLabel,
     this.errorText,
     this.visible: true,
-    this.labelAlign,
-    this.requiredIndicator,
+    @required this.labelAlign,
+    @required this.requiredIndicator,
+    this.enabled = true,
+    @required this.fieldPadding,
   });
 
+  @override
   final String label;
   final String unitLabel;
   final Widget content;
   final IconData pickerIcon;
+  @override
   final double labelWidth;
   final bool contentOnNewLine;
   final String errorText;
+  @override
   final bool visible;
+  @override
   final TextAlign labelAlign;
+  @override
   final Icon icon;
+  @override
   final Widget requiredIndicator;
+  final bool enabled;
+  @override
+  final EdgeInsetsGeometry fieldPadding;
+
+  @override
+  TextAlign get contentAlign => throw UnimplementedError(unimplemented);
+  @override
+  bool get showMaterialonIOS => throw UnimplementedError(unimplemented);
+  @override
+  AutovalidateMode get autovalidateMode => throw UnimplementedError();
+  /* @override
+  bool get autovalidate => throw UnimplementedError(unimplemented); */
+  @override
+  Function get onChanged => throw UnimplementedError(unimplemented);
+  @override
+  Function get onSaved => throw UnimplementedError(unimplemented);
+  @override
+  Function get validator => throw UnimplementedError(unimplemented);
 
   @override
   Widget build(BuildContext context) {
+    EdgeInsetsGeometry _fieldPadding = (fieldPadding ??
+        CardSettings.of(context).fieldPadding ??
+        EdgeInsets.only(left: 14.0, top: 8.0, right: 14.0, bottom: 8.0));
+
     if (visible) {
       return Container(
-        decoration: BoxDecoration(
-          border: Border(
-            bottom:
-                BorderSide(width: 1.0, color: Theme.of(context).dividerColor),
-          ),
-        ),
-        padding: EdgeInsets.all(14.0),
+        padding: _fieldPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -51,9 +80,7 @@ class CardSettingsField extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 _buildLabelBlock(context),
-                Expanded(
-                  child: _buildInlineContent(context),
-                ),
+                _buildInlineContent(context),
                 _buildRightDecoration()
               ],
             ),
@@ -67,7 +94,9 @@ class CardSettingsField extends StatelessWidget {
   }
 
   Widget _buildInlineContent(BuildContext context) {
-    return contentOnNewLine ? Text('') : _buildDecoratedContent(context);
+    return contentOnNewLine
+        ? Container()
+        : Expanded(child: _buildDecoratedContent(context));
   }
 
   Widget _buildNewRowContent(BuildContext context) {
@@ -102,27 +131,38 @@ class CardSettingsField extends StatelessWidget {
   }
 
   Widget _buildLabelBlock(BuildContext context) {
-    return Container(
-      width: (contentOnNewLine)
-          ? 260.0 //TODO: remove hard coded width
-          : labelWidth ?? CardSettings.of(context).labelWidth ?? 120.0,
-      padding:
-          EdgeInsets.only(right: CardSettings.of(context).labelPadding ?? 6.0),
-      child: Row(
-        children: <Widget>[
-          _buildLeftIcon(context),
-          _buildLabelSpacer(context),
-          Expanded(
-            child: Row(
-              children: <Widget>[
-                _buildLabelText(context),
-                _buildlabelRequiredIndicator(context),
-              ],
+    var padding =
+        EdgeInsets.only(right: CardSettings.of(context).labelPadding ?? 6.0);
+
+    return (contentOnNewLine)
+        ? Expanded(
+            child: Container(
+              padding: padding,
+              child: _buildLabelRow(context),
             ),
+          )
+        : Container(
+            width: labelWidth ?? CardSettings.of(context).labelWidth ?? 120.0,
+            padding: padding,
+            child: _buildLabelRow(context),
+          );
+  }
+
+  Row _buildLabelRow(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        _buildLeftIcon(context),
+        _buildLabelSpacer(context),
+        Expanded(
+          child: Row(
+            children: <Widget>[
+              _buildLabelText(context),
+              _buildlabelRequiredIndicator(context),
+            ],
           ),
-          _buildLabelSuffix(context),
-        ],
-      ),
+        ),
+        _buildLabelSuffix(context),
+      ],
     );
   }
 
@@ -177,7 +217,12 @@ class CardSettingsField extends StatelessWidget {
       fontSize: 16.0,
     );
 
-    return labelStyle.merge(Theme.of(context).inputDecorationTheme.labelStyle);
+    labelStyle =
+        labelStyle.merge(Theme.of(context).inputDecorationTheme.labelStyle);
+    if (!enabled)
+      labelStyle = labelStyle.copyWith(color: Theme.of(context).disabledColor);
+
+    return labelStyle;
   }
 
   Widget _buildLeftIcon(BuildContext context) {
@@ -192,7 +237,9 @@ class CardSettingsField extends StatelessWidget {
               icon.icon,
               color: (icon.color != null)
                   ? icon.color
-                  : (labelStyle == null) ? null : labelStyle.color,
+                  : (labelStyle == null)
+                      ? null
+                      : labelStyle.color,
             ),
           );
   }
@@ -200,9 +247,10 @@ class CardSettingsField extends StatelessWidget {
   Widget _buildRightDecoration() {
     return (pickerIcon != null || unitLabel != null)
         ? Container(
+            padding: EdgeInsets.only(left: 10),
             alignment: Alignment.centerRight,
             child: (pickerIcon != null)
-                ? Icon(pickerIcon)
+                ? Icon(pickerIcon, size: 20)
                 : Text(
                     unitLabel,
                     style: TextStyle(fontStyle: FontStyle.italic),

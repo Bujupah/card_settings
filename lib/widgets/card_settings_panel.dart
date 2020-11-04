@@ -1,10 +1,15 @@
 // Copyright (c) 2018, codegrue. All rights reserved. Use of this source code
 // is governed by the MIT license that can be found in the LICENSE file.
 
+import 'package:card_settings/card_settings.dart';
 import 'package:card_settings/helpers/platform_functions.dart';
+import 'package:card_settings/widgets/card_settings_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cupertino_settings/flutter_cupertino_settings.dart';
+
+import 'information_fields/card_settings_header.dart';
+import 'information_fields/card_settings_instructions.dart';
 
 /// This is the card wrapper that all the field controls are placed into
 class CardSettings extends InheritedWidget {
@@ -15,15 +20,29 @@ class CardSettings extends InheritedWidget {
     this.labelPadding,
     this.labelSuffix,
     this.contentAlign: TextAlign.left,
-    this.padding: 8.0,
-    this.cardElevation: 5.0,
+    this.padding: const EdgeInsets.all(0.0),
+    this.margin: const EdgeInsets.all(8.0),
+    this.cardElevation,
     List<CardSettingsSection> children,
-    bool showMaterialonIOS: false,
+    this.showMaterialonIOS: false,
     this.shrinkWrap = false,
+    this.cardless = false,
+    this.divider,
+    this.scrollable = true,
+    this.fieldPadding,
   }) : super(
           key: key,
-          child: _buildChild(children, showMaterialonIOS, cardElevation,
-              padding, shrinkWrap, false),
+          child: _CardSettingsContent(
+            children: children,
+            showMaterialonIOS: showMaterialonIOS,
+            cardElevation: cardElevation,
+            padding: padding,
+            margin: margin,
+            shrinkWrap: shrinkWrap,
+            sectioned: false,
+            cardless: cardless,
+            scrollable: scrollable,
+          ),
         );
 
   // constructor that wraps each section in it's own card
@@ -34,15 +53,29 @@ class CardSettings extends InheritedWidget {
     this.labelPadding,
     this.labelSuffix,
     this.contentAlign: TextAlign.left,
-    this.padding: 8.0,
-    this.cardElevation: 5.0,
+    this.padding: const EdgeInsets.all(0.0),
+    this.margin: const EdgeInsets.fromLTRB(8, 8, 8, 0.0),
+    this.cardElevation,
     List<CardSettingsSection> children,
-    bool showMaterialonIOS: false,
-    this.shrinkWrap = false,
+    this.showMaterialonIOS: false,
+    this.shrinkWrap = true,
+    this.cardless = false,
+    this.divider,
+    this.scrollable = true,
+    this.fieldPadding,
   }) : super(
           key: key,
-          child: _buildChild(children, showMaterialonIOS, cardElevation,
-              padding, shrinkWrap, true),
+          child: _CardSettingsContent(
+            children: children,
+            showMaterialonIOS: showMaterialonIOS,
+            cardElevation: cardElevation,
+            padding: padding,
+            margin: margin,
+            shrinkWrap: shrinkWrap,
+            sectioned: true,
+            cardless: cardless,
+            scrollable: scrollable,
+          ),
         );
 
   final TextAlign labelAlign;
@@ -50,9 +83,15 @@ class CardSettings extends InheritedWidget {
   final double labelPadding;
   final String labelSuffix;
   final TextAlign contentAlign;
-  final double padding;
+  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry margin;
   final double cardElevation;
   final bool shrinkWrap;
+  final bool showMaterialonIOS;
+  final bool cardless;
+  final Divider divider;
+  final bool scrollable;
+  final EdgeInsetsGeometry fieldPadding;
 
   static CardSettings of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<CardSettings>();
@@ -68,113 +107,151 @@ class CardSettings extends InheritedWidget {
     if (contentAlign != old.contentAlign) return true;
     return false;
   }
+}
 
-  static Widget _buildChild(
-      List<CardSettingsSection> children,
-      bool showMaterialonIOS,
-      double cardElevation,
-      double padding,
-      bool shrinkWrap,
-      bool sectioned) {
-    return (showCupertino(showMaterialonIOS))
-        ? _buildCupertinoWrapper(children, shrinkWrap, sectioned)
-        : _buildMaterialWrapper(
-            children, padding, cardElevation, shrinkWrap, sectioned);
+/// This provides some common properties for the content
+/// area of a card settings form
+class _CardSettingsContent extends StatelessWidget {
+  const _CardSettingsContent({
+    Key key,
+    @required this.children,
+    @required this.showMaterialonIOS,
+    @required this.cardElevation,
+    @required this.padding,
+    @required this.margin,
+    @required this.shrinkWrap,
+    @required this.sectioned,
+    @required this.cardless,
+    @required this.scrollable,
+  }) : super(key: key);
+
+  final List<CardSettingsSection> children;
+  final bool showMaterialonIOS;
+  final double cardElevation;
+  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry margin;
+  final bool shrinkWrap;
+  final bool sectioned;
+  final bool cardless;
+  final bool scrollable;
+
+  @override
+  Widget build(BuildContext context) {
+    return (showCupertino(null, showMaterialonIOS))
+        ? _buildCupertinoWrapper()
+        : _buildMaterialWrapper(context);
   }
 
-  static Widget _buildMaterialWrapper(List<CardSettingsSection> children,
-      double padding, double cardElevation, bool shrinkWrap, bool sectioned) {
-    if (sectioned) {
-      return ListView(
-        children: _buildSections(children, cardElevation, padding),
-        shrinkWrap: shrinkWrap,
-      );
-    } else {
-      return SafeArea(
-        child: Container(
-          padding: EdgeInsets.all(padding),
-          child: Card(
-            margin: EdgeInsets.all(0.0),
-            elevation: cardElevation,
-            child: ListView(
-              children: children,
-              shrinkWrap: shrinkWrap,
-            ),
-          ),
-        ),
-      );
-    }
+  Widget _buildCupertinoWrapper() {
+    return CupertinoSettings(
+      items: children,
+      shrinkWrap: shrinkWrap,
+    );
   }
 
-  static Widget _buildCupertinoWrapper(
-      List<CardSettingsSection> children, bool shrinkWrap, bool sectioned) {
-    if (sectioned) {
-      return CupertinoSettings(
-        items: _getWidgets(children),
-        shrinkWrap: shrinkWrap,
-      );
-    } else {
-      return CupertinoSettings(
-        items: children,
-        shrinkWrap: shrinkWrap,
-      );
-    }
+  Widget _buildMaterialWrapper(BuildContext context) {
+    var cards = (sectioned)
+        ? Column(
+            children: _buildMaterialSections(context),
+          )
+        : _buildMaterialCardWrapper(
+            context,
+            content: Column(children: children),
+          );
+
+    var wrapper = (scrollable) ? SingleChildScrollView(child: cards) : cards;
+
+    return SafeArea(child: wrapper);
   }
 
-  static List<Widget> _getWidgets(List<CardSettingsSection> sections) {
+  List<Widget> _buildMaterialSections(BuildContext context) {
     List<Widget> _children = <Widget>[];
-    for (var row in sections) {
-      _children.add(row.build(null));
-    }
-    return _children;
-  }
 
-  static List<Widget> _buildSections(List<CardSettingsSection> sections,
-      double cardElevation, double padding) {
-    List<Widget> _children = <Widget>[];
-    for (var row in sections) {
+    // build a separate card for each section
+    for (var section in children) {
       _children.add(
-        SafeArea(
-          child: Container(
-            padding: EdgeInsets.fromLTRB(padding, padding, padding, 0.0),
-            child: Card(
-              elevation: cardElevation,
-              child: row.build(null),
-            ),
-          ),
+        _buildMaterialCardWrapper(
+          context,
+          content: section.build(context),
         ),
       );
     }
     return _children;
+  }
+
+  Widget _buildMaterialCardWrapper(BuildContext context, {Widget content}) {
+    return (cardless)
+        ? Container(
+            margin: margin,
+            padding: padding,
+            child: content,
+          )
+        : Card(
+            margin: margin,
+            clipBehavior:
+                Theme.of(context).cardTheme.clipBehavior ?? Clip.antiAlias,
+            elevation: cardElevation,
+            child: Padding(
+              padding: padding,
+              child: content,
+            ),
+          );
   }
 }
 
+/// This visually wraps a logical grouping of form widgets
 class CardSettingsSection extends StatelessWidget {
   CardSettingsSection({
     this.instructions,
     this.children,
     this.header,
-    this.showMaterialonIOS = false,
+    this.showMaterialonIOS,
+    this.divider,
   });
 
-  final Widget header;
-  final Widget instructions;
-  final List<Widget> children;
+  final CardSettingsHeader header;
+  final CardSettingsInstructions instructions;
+  final List<CardSettingsWidget> children;
   final bool showMaterialonIOS;
+  final Divider divider;
 
   @override
   Widget build(BuildContext context) {
+    var _divider = divider ??
+        CardSettings.of(context).divider ??
+        Divider(
+          thickness: 1.0,
+          color: Theme.of(context).dividerColor,
+        );
+
     List<Widget> _children = <Widget>[];
-    if (showCupertino(showMaterialonIOS)) {
+    if (showCupertino(context, showMaterialonIOS)) {
       if (header != null) _children.add(header);
       if (children != null) _children.addAll(children);
       if (instructions != null) _children.add(instructions);
     } else {
       if (header != null) _children.add(header);
       if (instructions != null) _children.add(instructions);
-      if (children != null) _children.addAll(children);
+
+      if (children != null) {
+        var visibleChildren = children.where((c) => c.visible);
+        for (var child in visibleChildren) {
+          _children.add(child);
+
+          var addDivider = true;
+          if (child is CardSettingsButton)
+            addDivider = false; // don't put divider between buttons
+          if (child == visibleChildren.last)
+            addDivider = false; // don't put a divider after the last item
+          if (addDivider) _children.add(_divider);
+        }
+      }
     }
 
-    return Column(children: _children);
+    //return Column(children: _children);
+
+    return Column(
+      children: _children,
+    );
   }
 }

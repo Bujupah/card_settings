@@ -13,7 +13,8 @@ class CardSettingsMultiselect extends CardSettingsCheckboxPicker {
     List<String> initialValues,
     FormFieldSetter<List<String>> onSaved,
     FormFieldValidator<List<String>> validator,
-    bool autovalidate: false,
+    // bool autovalidate: false,
+    AutovalidateMode autovalidateMode : AutovalidateMode.onUserInteraction,
     ValueChanged<List<String>> onChanged,
     String label = 'Select',
     bool visible = true,
@@ -23,12 +24,14 @@ class CardSettingsMultiselect extends CardSettingsCheckboxPicker {
     Widget requiredIndicator,
     List<String> options,
     bool showMaterialonIOS = false,
+    EdgeInsetsGeometry fieldPadding,
   }) : super(
           key: key,
           initialValues: initialValues,
           onSaved: onSaved,
           validator: validator,
-          autovalidate: autovalidate,
+          // autovalidate:autovalidate,
+          autovalidateMode: autovalidateMode,
           onChanged: onChanged,
           label: label,
           visible: visible,
@@ -38,5 +41,6 @@ class CardSettingsMultiselect extends CardSettingsCheckboxPicker {
           requiredIndicator: requiredIndicator,
           options: options,
           showMaterialonIOS: showMaterialonIOS,
+          fieldPadding: fieldPadding,
         );
 }

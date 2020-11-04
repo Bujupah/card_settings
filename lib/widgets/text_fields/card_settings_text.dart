@@ -10,16 +10,18 @@ import 'package:flutter_cupertino_settings/flutter_cupertino_settings.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../card_settings.dart';
-import '../../models/common_card_field_attributes.dart';
+import '../../interfaces/common_field_properties.dart';
+import '../../interfaces/text_field_properties.dart';
 
 /// This is a standard one line text entry  It's based on the [TextFormField] widget.
 class CardSettingsText extends FormField<String>
-    implements CommonCardFieldAttributes {
+    implements ICommonFieldProperties, ITextFieldProperties {
   CardSettingsText({
     Key key,
     String initialValue,
     bool autovalidate: false,
-    bool enabled: true,
+    AutovalidateMode autovalidateMode : AutovalidateMode.onUserInteraction,
+    this.enabled = true,
     this.onSaved,
     this.validator,
     this.onChanged,
@@ -32,6 +34,8 @@ class CardSettingsText extends FormField<String>
     this.onFieldSubmitted,
     this.style,
     this.focusNode,
+    this.inputAction,
+    this.inputActionNode,
     this.label = 'Label',
     this.contentOnNewLine = false,
     this.maxLength = 20,
@@ -49,14 +53,16 @@ class CardSettingsText extends FormField<String>
     this.prefixText,
     this.requiredIndicator,
     this.unitLabel,
-    this.showMaterialonIOS = false,
+    this.showMaterialonIOS,
     this.showClearButtonIOS = OverlayVisibilityMode.never,
+    this.fieldPadding,
+    
   })  : //assert(initialValue == null || controller == null),
         assert(keyboardType != null),
         assert(autofocus != null),
         assert(obscureText != null),
         assert(autocorrect != null),
-        assert(autovalidate != null),
+        assert(autovalidateMode != null),
         assert(textCapitalization != null),
         assert(maxLengthEnforced != null),
         assert(maxLength == null || maxLength > 0),
@@ -66,11 +72,13 @@ class CardSettingsText extends FormField<String>
           initialValue: initialValue,
           onSaved: onSaved,
           validator: validator,
-          autovalidate: autovalidate,
+          //autovalidate: autovalidate,
+          autovalidateMode: autovalidateMode,
           builder: (FormFieldState<String> field) =>
               (field as _CardSettingsTextState)._build(field.context),
         );
 
+  @override
   final ValueChanged<String> onChanged;
 
   final TextEditingController controller;
@@ -79,11 +87,18 @@ class CardSettingsText extends FormField<String>
 
   final FocusNode focusNode;
 
+  final TextInputAction inputAction;
+
+  final FocusNode inputActionNode;
+
   final TextInputType keyboardType;
 
   final TextCapitalization textCapitalization;
 
   final TextStyle style;
+
+  @override
+  final bool enabled;
 
   final bool maxLengthEnforced;
 
@@ -105,7 +120,6 @@ class CardSettingsText extends FormField<String>
 
   final String unitLabel;
 
-  @override
   final String prefixText;
 
   @override
@@ -114,6 +128,7 @@ class CardSettingsText extends FormField<String>
   @override
   final Icon icon;
 
+  @override
   final Widget requiredIndicator;
 
   final bool contentOnNewLine;
@@ -124,6 +139,7 @@ class CardSettingsText extends FormField<String>
 
   final bool showCounter;
 
+  @override
   final bool visible;
 
   final bool autofocus;
@@ -132,7 +148,11 @@ class CardSettingsText extends FormField<String>
 
   final bool autocorrect;
 
+  @override
   final bool showMaterialonIOS;
+
+  @override
+  final EdgeInsetsGeometry fieldPadding;
 
   ///Since the CupertinoTextField does not support onSaved, please use [onChanged] or [onFieldSubmitted] instead
   @override
@@ -152,25 +172,13 @@ class CardSettingsText extends FormField<String>
 class _CardSettingsTextState extends FormFieldState<String> {
   TextEditingController _controller;
 
-  TextEditingController get _effectiveController =>
-      widget.controller ?? _controller;
-
   @override
   CardSettingsText get widget => super.widget as CardSettingsText;
 
   @override
   void initState() {
     super.initState();
-    if (widget.controller == null) {
-      if (widget.inputMask == null) {
-        _controller = TextEditingController(text: widget.initialValue);
-      } else {
-        _controller = MaskedTextController(
-            mask: widget.inputMask, text: widget.initialValue);
-      }
-    } else {
-      widget.controller.addListener(_handleControllerChanged);
-    }
+    _initController(widget.initialValue);
   }
 
   @override
@@ -178,16 +186,23 @@ class _CardSettingsTextState extends FormFieldState<String> {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != oldWidget.controller) {
       oldWidget.controller?.removeListener(_handleControllerChanged);
-      widget.controller?.addListener(_handleControllerChanged);
-
-      if (oldWidget.controller != null && widget.controller == null)
-        _controller =
-            TextEditingController.fromValue(oldWidget.controller.value);
-      if (widget.controller != null) {
-        setValue(widget.controller.text);
-        if (oldWidget.controller == null) _controller = null;
-      }
+      _initController(oldWidget.controller.value.toString());
     }
+  }
+
+  void _initController(String initialValue) {
+    if (widget.controller == null) {
+      if (widget.inputMask == null) {
+        _controller = TextEditingController(text: initialValue);
+      } else {
+        _controller =
+            MaskedTextController(mask: widget.inputMask, text: initialValue);
+      }
+    } else {
+      _controller = widget.controller;
+    }
+
+    _controller.addListener(_handleControllerChanged);
   }
 
   @override
@@ -200,28 +215,36 @@ class _CardSettingsTextState extends FormFieldState<String> {
   void reset() {
     super.reset();
     setState(() {
-      _effectiveController.text = widget.initialValue;
+      _controller.text = widget.initialValue;
     });
   }
 
   void _handleControllerChanged() {
-    if (_effectiveController.text != value) {
-      didChange(_effectiveController.text);
+    if (_controller.text != value) {
+      didChange(_controller.text);
     }
   }
 
-  void _handleOnChanged(String _value) {
-    if (this.value != _value) {
-      didChange(_value);
-
-      if (widget.onChanged != null) {
-        widget.onChanged(_value);
-      }
+  void _handleOnChanged(String value) {
+    if (widget.onChanged != null) {
+      widget.onChanged(value);
     }
+  }
+
+  void _onFieldSubmitted(String value) {
+    if (this.widget?.focusNode != null) this.widget.focusNode.unfocus();
+
+    if (this.widget?.inputActionNode != null) {
+      this.widget.inputActionNode.requestFocus();
+      return;
+    }
+
+    if (this.widget?.onFieldSubmitted != null)
+      this.widget.onFieldSubmitted(value);
   }
 
   Widget _build(BuildContext context) {
-    if (showCupertino(widget.showMaterialonIOS))
+    if (showCupertino(context, widget.showMaterialonIOS))
       return _buildCupertinoTextbox(context);
     else
       return _buildMaterialTextbox(context);
@@ -234,16 +257,27 @@ class _CardSettingsTextState extends FormFieldState<String> {
       hasError = (errorMessage != null);
     }
 
+    final ls = labelStyle(context, widget?.enabled ?? true);
     final _child = Container(
       child: CupertinoTextField(
-        prefix: widget?.prefixText == null ? null : Text(widget.prefixText),
-        suffix: widget?.unitLabel == null ? null : Text(widget.unitLabel),
-        controller: _effectiveController,
-
+        prefix: widget?.prefixText == null
+            ? null
+            : Text(
+                widget.prefixText,
+                style: ls,
+              ),
+        suffix: widget?.unitLabel == null
+            ? null
+            : Text(
+                widget.unitLabel,
+                style: ls,
+              ),
+        controller: _controller,
         focusNode: widget?.focusNode,
+        textInputAction: widget?.inputAction,
         keyboardType: widget?.keyboardType,
         textCapitalization: widget?.textCapitalization,
-        style: widget?.style ?? Theme.of(context).textTheme.subtitle1,
+        style: contentStyle(context, value, widget.enabled),
         decoration: hasError
             ? BoxDecoration(
                 border: Border.all(color: Colors.red),
@@ -290,7 +324,7 @@ class _CardSettingsTextState extends FormFieldState<String> {
             ? widget?.maxLength
             : null, // if we want counter use default behavior
         onChanged: _handleOnChanged,
-        onSubmitted: widget?.onFieldSubmitted,
+        onSubmitted: _onFieldSubmitted,
         inputFormatters: widget?.inputFormatters ??
             [
               // if we don't want the counter, use this maxLength instead
@@ -308,8 +342,11 @@ class _CardSettingsTextState extends FormFieldState<String> {
                   children: <Widget>[
                     CSControl(
                       nameWidget: widget?.requiredIndicator != null
-                          ? Text((widget?.label ?? "") + ' *')
-                          : Text(widget?.label),
+                          ? Text(
+                              (widget?.label ?? "") + ' *',
+                              style: ls,
+                            )
+                          : Text(widget?.label, style: ls),
                       contentWidget: Container(),
                       style: CSWidgetStyle(icon: widget?.icon),
                     ),
@@ -347,9 +384,14 @@ class _CardSettingsTextState extends FormFieldState<String> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     CSControl(
-                      nameWidget: widget?.requiredIndicator != null
-                          ? Text((widget?.label ?? "") + ' *')
-                          : Text(widget?.label),
+                      nameWidget: Container(
+                        width: widget?.labelWidth ??
+                            CardSettings.of(context).labelWidth ??
+                            120.0,
+                        child: widget?.requiredIndicator != null
+                            ? Text((widget?.label ?? "") + ' *', style: ls)
+                            : Text(widget?.label, style: ls),
+                      ),
                       contentWidget: Expanded(
                         child: Container(
                           padding: EdgeInsets.only(left: 10.0),
@@ -388,18 +430,23 @@ class _CardSettingsTextState extends FormFieldState<String> {
     return CardSettingsField(
       label: widget.label,
       labelAlign: widget?.labelAlign,
-      labelWidth: widget.labelWidth,
+      labelWidth: widget?.labelWidth,
       visible: widget?.visible,
       unitLabel: widget?.unitLabel,
       icon: widget?.icon,
       requiredIndicator: widget?.requiredIndicator,
       contentOnNewLine: widget?.contentOnNewLine ?? false,
+      enabled: widget.enabled,
+      fieldPadding: widget.fieldPadding,
       content: TextField(
-        controller: _effectiveController,
+        controller: _controller,
         focusNode: widget?.focusNode,
         keyboardType: widget?.keyboardType,
+        textInputAction: widget?.inputAction,
         textCapitalization: widget?.textCapitalization,
-        style: widget?.style ?? Theme.of(context).textTheme.subtitle1,
+        enabled: widget.enabled,
+        readOnly: !widget.enabled,
+        style: contentStyle(context, value, widget.enabled),
         decoration: InputDecoration(
           contentPadding: EdgeInsets.all(0.0),
           border: InputBorder.none,
@@ -419,13 +466,12 @@ class _CardSettingsTextState extends FormFieldState<String> {
             ? widget?.maxLength
             : null, // if we want counter use default behavior
         onChanged: _handleOnChanged,
-        onSubmitted: widget?.onFieldSubmitted,
+        onSubmitted: _onFieldSubmitted,
         inputFormatters: widget?.inputFormatters ??
             [
               // if we don't want the counter, use this maxLength instead
               LengthLimitingTextInputFormatter(widget?.maxLength)
             ],
-        enabled: widget?.enabled,
       ),
     );
   }

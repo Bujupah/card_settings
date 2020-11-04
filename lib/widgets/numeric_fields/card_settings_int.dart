@@ -5,13 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../card_settings.dart';
+import '../../interfaces/common_field_properties.dart';
 
 /// This is a password field. It obscures the entered text.
-class CardSettingsInt extends CardSettingsText {
+class CardSettingsInt extends CardSettingsText
+    implements ICommonFieldProperties {
   CardSettingsInt({
     Key key,
     String label: 'Label',
     TextAlign labelAlign,
+    double labelWidth,
     TextAlign contentAlign,
     String hintText,
     int initialValue: 0,
@@ -24,23 +27,28 @@ class CardSettingsInt extends CardSettingsText {
     bool autofocus: false,
     bool obscureText: false,
     bool autocorrect: false,
-    bool autovalidate: false,
+    // bool autovalidate: false,
+    AutovalidateMode autovalidateMode: AutovalidateMode.onUserInteraction,
     FormFieldValidator<int> validator,
     FormFieldSetter<int> onSaved,
     ValueChanged<int> onChanged,
     TextEditingController controller,
     FocusNode focusNode,
+    TextInputAction inputAction,
+    FocusNode inputActionNode,
     TextInputType keyboardType,
     TextStyle style,
     bool maxLengthEnforced: true,
     ValueChanged<String> onFieldSubmitted,
     List<TextInputFormatter> inputFormatters,
-    bool showMaterialonIOS: false,
+    bool showMaterialonIOS,
+    EdgeInsetsGeometry fieldPadding,
   }) : super(
           key: key,
           label: label,
           hintText: hintText,
           labelAlign: labelAlign,
+          labelWidth: labelWidth,
           showMaterialonIOS: showMaterialonIOS,
           contentAlign: contentAlign,
           initialValue: initialValue?.toString(),
@@ -53,7 +61,9 @@ class CardSettingsInt extends CardSettingsText {
           autofocus: autofocus,
           obscureText: obscureText,
           autocorrect: autocorrect,
-          autovalidate: autovalidate,
+          // autovalidate: autovalidate,
+          autovalidateMode: autovalidateMode,
+          fieldPadding: fieldPadding,
           validator: (value) {
             if (validator == null) return null;
             return validator(intelligentCast<int>(value));
@@ -68,6 +78,8 @@ class CardSettingsInt extends CardSettingsText {
           },
           controller: controller,
           focusNode: focusNode,
+          inputAction: inputAction,
+          inputActionNode: inputActionNode,
           keyboardType:
               keyboardType ?? TextInputType.numberWithOptions(decimal: false),
           style: style,
@@ -75,7 +87,7 @@ class CardSettingsInt extends CardSettingsText {
           onFieldSubmitted: onFieldSubmitted,
           inputFormatters: [
             LengthLimitingTextInputFormatter(maxLength),
-            WhitelistingTextInputFormatter(RegExp("[0-9]+")),
+            FilteringTextInputFormatter.allow(RegExp("[0-9]+")),
           ],
         );
 }

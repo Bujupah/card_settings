@@ -8,15 +8,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cupertino_settings/flutter_cupertino_settings.dart';
 
 import '../../card_settings.dart';
+import '../../interfaces/common_field_properties.dart';
 
 /// This is a field that allows a boolean to be set via a switch widget.
-class CardSettingsSlider extends FormField<double> {
+class CardSettingsSlider extends FormField<double>
+    implements ICommonFieldProperties {
   CardSettingsSlider({
     Key key,
     bool autovalidate: false,
+    AutovalidateMode autovalidateMode : AutovalidateMode.onUserInteraction,
     FormFieldSetter<double> onSaved,
     FormFieldValidator<double> validator,
     double initialValue = 0.0,
+    this.enabled = true,
     this.trueLabel = "Yes",
     this.falseLabel = "No",
     this.visible = true,
@@ -32,37 +36,57 @@ class CardSettingsSlider extends FormField<double> {
     this.min,
     this.max,
     this.divisions,
-    this.showMaterialonIOS = false,
+    this.showMaterialonIOS,
+    this.fieldPadding,
   }) : super(
             key: key,
             initialValue: initialValue,
             onSaved: onSaved,
             validator: validator,
-            autovalidate: autovalidate,
+            // autovalidate: autovalidate,
+            autovalidateMode: autovalidateMode,
             builder: (FormFieldState<double> field) =>
                 (field as _CardSettingsSliderState)._build(field.context));
 
+  @override
   final String label;
-
+  @override
   final TextAlign labelAlign;
 
+  @override
   final double labelWidth;
 
+  @override
   final TextAlign contentAlign;
 
+  @override
   final Icon icon;
 
+  @override
+  final bool enabled;
+
+  @override
   final Widget requiredIndicator;
 
   final String trueLabel;
 
   final String falseLabel;
 
-  final ValueChanged<double> onChanged, onChangedEnd, onChangedStart;
+  @override
+  final ValueChanged<double> onChanged;
 
+  final ValueChanged<double> onChangedEnd;
+
+  final ValueChanged<double> onChangedStart;
+
+  @override
   final bool visible;
 
+  @override
   final bool showMaterialonIOS;
+
+  @override
+  final EdgeInsetsGeometry fieldPadding;
 
   final int divisions;
 
@@ -77,20 +101,32 @@ class _CardSettingsSliderState extends FormFieldState<double> {
   CardSettingsSlider get widget => super.widget as CardSettingsSlider;
 
   Widget _build(BuildContext context) {
-    if (showCupertino(widget.showMaterialonIOS))
-      return cupertinoSettingsSlider();
+    if (showCupertino(context, widget.showMaterialonIOS))
+      return _cupertinoSettingsSlider();
     else
-      return materialSettingsSlider();
+      return _materialSettingsSlider();
   }
 
-  Widget cupertinoSettingsSlider() {
+  Widget _cupertinoSettingsSlider() {
+    final ls = labelStyle(context, widget?.enabled ?? true);
     return Container(
       child: widget?.visible == false
           ? null
           : CSControl(
-              nameWidget: widget?.requiredIndicator != null
-                  ? Text((widget?.label ?? "") + ' *')
-                  : Text(widget?.label),
+              nameWidget: Container(
+                width: widget?.labelWidth ??
+                    CardSettings.of(context).labelWidth ??
+                    120.0,
+                child: widget?.requiredIndicator != null
+                    ? Text(
+                        (widget?.label ?? "") + ' *',
+                        style: ls,
+                      )
+                    : Text(
+                        widget?.label,
+                        style: ls,
+                      ),
+              ),
               contentWidget: CupertinoSlider(
                 value: value,
                 divisions: widget?.divisions,
@@ -98,25 +134,29 @@ class _CardSettingsSliderState extends FormFieldState<double> {
                 max: widget?.max ?? 1,
                 onChangeEnd: widget?.onChangedEnd,
                 onChangeStart: widget?.onChangedStart,
-                onChanged: (value) {
-                  didChange(value);
-                  if (widget?.onChanged != null) widget?.onChanged(value);
-                },
+                onChanged: (widget.enabled)
+                    ? (value) {
+                        didChange(value);
+                        if (widget?.onChanged != null) widget?.onChanged(value);
+                      }
+                    : null, // to disable, we need to not provide an onChanged function
               ),
               style: CSWidgetStyle(icon: widget?.icon),
             ),
     );
   }
 
-  Widget materialSettingsSlider() {
+  Widget _materialSettingsSlider() {
     return CardSettingsField(
       label: widget?.label,
       labelAlign: widget?.labelAlign,
       labelWidth: widget?.labelWidth,
       visible: widget?.visible,
+      enabled: widget?.enabled,
       icon: widget?.icon,
       requiredIndicator: widget?.requiredIndicator,
       errorText: errorText,
+      fieldPadding: widget.fieldPadding,
       content: Row(children: <Widget>[
         Expanded(
           child: Container(
@@ -125,7 +165,7 @@ class _CardSettingsSliderState extends FormFieldState<double> {
               height: 20.0,
               child: SliderTheme(
                 data: SliderThemeData(
-                  trackShape: CustomTrackShape(),
+                  trackShape: _CustomTrackShape(),
                 ),
                 child: Slider(
                   activeColor: Theme.of(context).primaryColor,
@@ -135,10 +175,13 @@ class _CardSettingsSliderState extends FormFieldState<double> {
                   max: widget?.max ?? 1,
                   onChangeEnd: widget?.onChangedEnd,
                   onChangeStart: widget?.onChangedStart,
-                  onChanged: (value) {
-                    didChange(value);
-                    if (widget?.onChanged != null) widget?.onChanged(value);
-                  },
+                  onChanged: (widget.enabled)
+                      ? (value) {
+                          didChange(value);
+                          if (widget?.onChanged != null)
+                            widget?.onChanged(value);
+                        }
+                      : null, // to disable, we need to not provide an onChanged function
                 ),
               ),
             ),
@@ -150,7 +193,7 @@ class _CardSettingsSliderState extends FormFieldState<double> {
 }
 
 // https://github.com/flutter/flutter/issues/37057
-class CustomTrackShape extends RoundedRectSliderTrackShape {
+class _CustomTrackShape extends RoundedRectSliderTrackShape {
   @override
   Rect getPreferredRect({
     @required RenderBox parentBox,

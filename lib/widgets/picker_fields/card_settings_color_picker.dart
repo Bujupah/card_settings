@@ -9,51 +9,76 @@ import 'package:flutter_cupertino_settings/flutter_cupertino_settings.dart';
 import 'package:flutter_material_pickers/flutter_material_pickers.dart';
 
 import '../../card_settings.dart';
+import '../../interfaces/common_field_properties.dart';
 
+/// This allows selection of which variant of the color picker you would like to use
 enum CardSettingsColorPickerType { colors, material, block }
 
 /// This is the color picker field
-class CardSettingsColorPicker extends FormField<Color> {
+class CardSettingsColorPicker extends FormField<Color>
+    implements ICommonFieldProperties {
   CardSettingsColorPicker({
     Key key,
-    bool autovalidate: false,
+    // bool autovalidate: false,
     FormFieldSetter<Color> onSaved,
     FormFieldValidator<Color> validator,
     Color initialValue = Colors.green,
+    AutovalidateMode autovalidateMode: AutovalidateMode.onUserInteraction,
+    this.enabled = true,
     this.onChanged,
     this.visible = true,
     this.contentAlign,
     this.icon,
     this.labelAlign,
+    this.labelWidth,
     this.pickerType = CardSettingsColorPickerType.colors,
     this.requiredIndicator,
     this.label = "Label",
-    this.showMaterialonIOS = false,
+    this.showMaterialonIOS,
+    this.fieldPadding,
   }) : super(
             key: key,
             initialValue: initialValue ?? Colors.black,
             onSaved: onSaved,
             validator: validator,
-            autovalidate: autovalidate,
+            // autovalidate: autovalidate,
+            autovalidateMode: autovalidateMode,
             builder: (FormFieldState<Color> field) =>
                 (field as _CardSettingsColorPickerState)._build(field.context));
 
+  @override
   final ValueChanged<Color> onChanged;
 
+  @override
   final TextAlign labelAlign;
 
+  @override
+  final double labelWidth;
+
   /// here for consistency, but does nothing.
+  @override
   final TextAlign contentAlign;
 
+  @override
   final Icon icon;
 
+  @override
   final Widget requiredIndicator;
 
+  @override
   final String label;
 
+  @override
+  final bool enabled;
+
+  @override
   final bool visible;
 
+  @override
   final bool showMaterialonIOS;
+
+  @override
+  final EdgeInsetsGeometry fieldPadding;
 
   final CardSettingsColorPickerType pickerType;
 
@@ -71,9 +96,9 @@ class _CardSettingsColorPickerState extends FormFieldState<Color> {
   void _showDialog() {
     pickerColor = value;
 
-    var title = "Color for " + widget?.label;
+    var title = widget.label;
 
-    var cupertinoColors = showCupertino(widget.showMaterialonIOS);
+    var cupertinoColors = showCupertino(context, widget.showMaterialonIOS);
     var headerColor = (cupertinoColors) ? Colors.white : null;
     var textColor = (cupertinoColors) ? Colors.black : null;
 
@@ -130,24 +155,36 @@ class _CardSettingsColorPickerState extends FormFieldState<Color> {
   }
 
   Widget _build(BuildContext context) {
-    if (showCupertino(widget.showMaterialonIOS))
-      return cupertinoSettingsColorPicker();
+    if (showCupertino(context, widget.showMaterialonIOS))
+      return _cupertinoSettingsColorPicker();
     else
-      return materialSettingsColorPicker();
+      return _materialSettingsColorPicker();
   }
 
-  Widget cupertinoSettingsColorPicker() {
+  Widget _cupertinoSettingsColorPicker() {
+    final ls = labelStyle(context, widget?.enabled ?? true);
     return Container(
       child: widget?.visible == false
           ? null
           : GestureDetector(
               onTap: () {
-                _showDialog();
+                if (widget.enabled) _showDialog();
               },
               child: CSControl(
-                nameWidget: widget?.requiredIndicator != null
-                    ? Text((widget?.label ?? "") + ' *')
-                    : Text(widget?.label),
+                nameWidget: Container(
+                  width: widget?.labelWidth ??
+                      CardSettings.of(context).labelWidth ??
+                      120.0,
+                  child: widget?.requiredIndicator != null
+                      ? Text(
+                          (widget?.label ?? "") + ' *',
+                          style: ls,
+                        )
+                      : Text(
+                          widget?.label,
+                          style: ls,
+                        ),
+                ),
                 contentWidget: Container(
                   height: 20.0,
                   width: 100.0,
@@ -162,18 +199,21 @@ class _CardSettingsColorPickerState extends FormFieldState<Color> {
     );
   }
 
-  Widget materialSettingsColorPicker() {
+  Widget _materialSettingsColorPicker() {
     return GestureDetector(
       onTap: () {
-        _showDialog();
+        if (widget.enabled) _showDialog();
       },
       child: CardSettingsField(
         label: widget?.label,
         labelAlign: widget?.labelAlign,
+        labelWidth: widget?.labelWidth,
+        enabled: widget?.enabled,
         visible: widget?.visible,
         icon: widget?.icon,
         requiredIndicator: widget?.requiredIndicator,
         errorText: errorText,
+        fieldPadding: widget.fieldPadding,
         content: Container(
           height: 20.0,
           decoration: BoxDecoration(

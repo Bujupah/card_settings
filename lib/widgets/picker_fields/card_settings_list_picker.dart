@@ -9,26 +9,32 @@ import 'package:flutter_cupertino_settings/flutter_cupertino_settings.dart';
 import 'package:flutter_material_pickers/flutter_material_pickers.dart';
 
 import '../../card_settings.dart';
+import '../../interfaces/common_field_properties.dart';
 
 /// This is a list picker that allows an arbitrary list of options to be provided.
-class CardSettingsListPicker extends FormField<String> {
+class CardSettingsListPicker extends FormField<String>
+    implements ICommonFieldProperties {
   CardSettingsListPicker({
     Key key,
     String initialValue,
     FormFieldSetter<String> onSaved,
     FormFieldValidator<String> validator,
-    bool autovalidate: false,
+    // bool autovalidate: false,
+    AutovalidateMode autovalidateMode : AutovalidateMode.onUserInteraction,
+    this.enabled = true,
     this.label = 'Label',
     this.visible = true,
     this.onChanged,
     this.requiredIndicator,
     this.labelAlign,
+    this.labelWidth,
     this.icon,
     this.contentAlign,
     this.hintText,
     this.options,
     this.values,
-    this.showMaterialonIOS = false,
+    this.showMaterialonIOS,
+    this.fieldPadding,
   })  : assert(values == null || options.length == values.length,
             "If you provide 'values', they need the same number as 'options'"),
         super(
@@ -36,31 +42,49 @@ class CardSettingsListPicker extends FormField<String> {
             initialValue: initialValue ?? null,
             onSaved: onSaved,
             validator: validator,
-            autovalidate: autovalidate,
+            //autovalidate: autovalidate,
+            autovalidateMode: autovalidateMode,
             builder: (FormFieldState<String> field) =>
                 (field as _CardSettingsListPickerState)._build(field.context));
 
+  @override
   final ValueChanged<String> onChanged;
 
+  @override
   final String label;
 
+  @override
+  final bool enabled;
+
+  @override
   final TextAlign labelAlign;
 
+  @override
+  final double labelWidth;
+
+  @override
   final TextAlign contentAlign;
 
   final String hintText;
 
+  @override
   final Icon icon;
 
+  @override
   final Widget requiredIndicator;
 
   final List<String> options;
 
   final List<String> values;
 
+  @override
   final bool visible;
 
+  @override
   final bool showMaterialonIOS;
+
+  @override
+  final EdgeInsetsGeometry fieldPadding;
 
   @override
   _CardSettingsListPickerState createState() => _CardSettingsListPickerState();
@@ -81,7 +105,7 @@ class _CardSettingsListPickerState extends FormFieldState<String> {
     } else {
       optionIndex = 0; // set to first element in the list
     }
-    if (showCupertino(widget.showMaterialonIOS))
+    if (showCupertino(context, widget.showMaterialonIOS))
       _showCupertinoBottomPicker(optionIndex);
     else
       _showMaterialScrollPicker(label, option);
@@ -96,7 +120,7 @@ class _CardSettingsListPickerState extends FormFieldState<String> {
         return _buildCupertinoBottomPicker(
           CupertinoPicker(
             scrollController: scrollController,
-            itemExtent: kPickerItemHeight,
+            itemExtent: kCupertinoPickerItemHeight,
             backgroundColor: CupertinoColors.white,
             onSelectedItemChanged: (int index) {
               didChange(values[index]);
@@ -138,7 +162,7 @@ class _CardSettingsListPickerState extends FormFieldState<String> {
 
   Widget _buildCupertinoBottomPicker(Widget picker) {
     return Container(
-      height: kPickerSheetHeight,
+      height: kCupertinoPickerSheetHeight,
       padding: const EdgeInsets.only(top: 6.0),
       color: CupertinoColors.white,
       child: DefaultTextStyle(
@@ -175,30 +199,39 @@ class _CardSettingsListPickerState extends FormFieldState<String> {
       content = options[optionIndex];
     }
 
-    if (showCupertino(widget.showMaterialonIOS))
-      return cupertinoSettingsListPicker(content);
+    if (showCupertino(context, widget.showMaterialonIOS))
+      return _cupertinoSettingsListPicker(content);
     else
-      return materialSettingsListPicker(content);
+      return _materialSettingsListPicker(content);
   }
 
-  Widget cupertinoSettingsListPicker(String content) {
+  Widget _cupertinoSettingsListPicker(String content) {
+    final ls = labelStyle(context, widget?.enabled ?? true);
     return Container(
       child: widget?.visible == false
           ? null
           : GestureDetector(
               onTap: () {
-                _showDialog(widget?.label);
+                if (widget.enabled) _showDialog(widget?.label);
               },
               child: CSControl(
-                nameWidget: widget?.requiredIndicator != null
-                    ? Text((widget?.label ?? "") + ' *')
-                    : Text(widget?.label),
+                nameWidget: Container(
+                  width: widget?.labelWidth ??
+                      CardSettings.of(context).labelWidth ??
+                      120.0,
+                  child: widget?.requiredIndicator != null
+                      ? Text(
+                          (widget?.label ?? "") + ' *',
+                          style: ls,
+                        )
+                      : Text(
+                          widget?.label,
+                          style: ls,
+                        ),
+                ),
                 contentWidget: Text(
                   content,
-                  style: Theme.of(context).textTheme.subtitle1.copyWith(
-                      color: (value == null)
-                          ? Theme.of(context).hintColor
-                          : Theme.of(context).textTheme.subtitle1.color),
+                  style: contentStyle(context, value, widget.enabled),
                   textAlign: widget?.contentAlign ??
                       CardSettings.of(context).contentAlign,
                 ),
@@ -208,28 +241,28 @@ class _CardSettingsListPickerState extends FormFieldState<String> {
     );
   }
 
-  Widget materialSettingsListPicker(String content) {
+  Widget _materialSettingsListPicker(String content) {
     return GestureDetector(
       onTap: () {
-        _showDialog(widget?.label);
+        if (widget.enabled) _showDialog(widget?.label);
       },
       child: CardSettingsField(
         label: widget?.label,
+        enabled: widget?.enabled,
         labelAlign: widget?.labelAlign,
+        labelWidth: widget?.labelWidth,
         visible: widget?.visible,
         icon: widget?.icon,
         requiredIndicator: widget?.requiredIndicator,
         errorText: errorText,
+        fieldPadding: widget.fieldPadding,
         content: Text(
           content,
-          style: Theme.of(context).textTheme.subtitle1.copyWith(
-              color: (value == null)
-                  ? Theme.of(context).hintColor
-                  : Theme.of(context).textTheme.subtitle1.color),
+          style: contentStyle(context, value, widget.enabled),
           textAlign:
               widget?.contentAlign ?? CardSettings.of(context).contentAlign,
         ),
-        pickerIcon: Icons.arrow_drop_down,
+        pickerIcon: (widget.enabled) ? Icons.arrow_drop_down : null,
       ),
     );
   }

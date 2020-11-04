@@ -1,6 +1,121 @@
 # Releases
 
-## [1.9.0] - 5/X/2020
+## [1.14.0] - 2020-10-05
+
+- upgraaded to latest `flutter_material_pickers`
+- changed autovalidate to be compatible with new channels [KingLudwig94]
+- fixed `DateTimePicker` parent layout error
+
+## [1.13.0] - 2020-09-16
+
+- removed dependency on `cupertino_icons`
+- fixed overflow error with file image thumbnails on smaller screens in iOS mode
+- fixed overflow error on datetimepicker on smaller iOS Screens
+- removed seconds from datetimepicker display
+- commented public API
+
+## [1.12.2] - 2020-08-31
+
+- updated dependencies
+
+## [1.12.1] - 2020-08-03
+
+- allowed phone numbers to be null
+- fixed bug in currencies with separator characters
+
+## [1.12.0] - 2020-07-21
+
+- updated material pickers to adopt the more compatible file_picker
+
+## [1.11.1] - 2020-07-11
+
+- added `scrollable` property to turn off built in scrolling (Material only).
+- changed card `padding` proptety to EdgeInsetsGeometry to allow full control
+- added `margin` proptety to `CardSettings`
+- added `fieldPadding` to all controls
+- refactored card building to merge common code
+
+## [1.11.0] - 2020-07-10
+
+- allow `CardSettingsHeader` to be completely customized through a `child` property.
+- exposed `CardSettingsWidget` externally to use in building custom widgets
+
+## [1.10.1] - 2020-07-09
+
+- fixed Heading and Instructions not hiding with visible = false
+
+## [1.10.0] - 2020-07-07
+
+- created a `divider` property on CardSettings and CardSettingsSections
+- removed the divider appearing from the last item in a section
+- ensure that widgets are of type `CardSettingsWidget` rather than just `Widget`
+- improved the number of interfaces to force consistency
+
+## [1.9.9+hotfix.1] - 2020-07-01
+
+- fixed content alignment issue
+
+## [1.9.9] - 2020-07-01
+
+- changed label style for disabled fields (thanks esskar)
+- added `cardless` option to flatten the material wrapper to just a Container
+- added border clipping to card contents by default
+- fixed overflow error on some fields when width of card is very slim
+
+## [1.9.8] - 2020-06-19
+
+- updated readme short example
+- created custom long example page to reference the important example file
+- fixel label widths on Cupertino (thanks esskar)
+- added support for text input action and a input action focus node (thanks esskar)
+- added custom font to example
+- changed photo thumbnail default size to 180x180
+- changed CardSettingsDouble to display localized numbers
+- changed CardSettingsPhone to format number in user's locale
+
+## [1.9.7] - 2020-06-09
+
+- ensure all widgets have the `labelWidth` property
+- fixed bug with photos not honoring the alignment property
+- extended interfaces to enforce API consistency
+
+## [1.9.6] - 2020-06-08
+
+- add step interval support to number picker (thanks CoolONEOfficial)
+- fixed gesture click on `CardSettingsFilePicker`
+- constrined `CardSettingsFilePicker` photo size
+- reorganized example to be more readable
+- removed hard coded "Color for" from `CardSettingsColorPicker` title to allow localization
+
+## [1.9.5] - 2020-06-04
+
+- fixed `enabled` behavior for all controls
+
+## [1.9.4] - 2020-06-03
+
+- added `CardSettingsFilePicker` (thanks CoolONEOfficial)
+- Upgraded `flutter_cupertino_settings` to address compatibility bug with the beta branch
+- Removed dependency on `flutter_platform_widgets`
+- Fixed overflow calculation for wide label fields
+
+## [1.9.3] - 2020-05-23
+
+- fixed assert bug in `CardSettingsSelectionPicker` when providing values and no icons
+- added CI to the project (Github Actions)
+- increased unit tests for code coverage
+- added more badges to the readme
+
+## [1.9.2] - 2020-05-20
+
+- updated `flutter_material_pickers` package to fix C`ardSettingsSelectionPicker` index bug
+
+## [1.9.1] - 2020-05-19
+
+- refactored single card display to scroll better on web
+- defaulted shrinkWrap to true
+- `showMaterialonIOS` on fields defaults to inherit from the `CardSettings` parent
+
+## [1.9.0] - 2020-05-18
 
 - compatible with flutter web now
 - `CardSettingsDateTimePicker` (combo) added
@@ -9,6 +124,7 @@
 - renamed `CardSettingsMultiselect` to `CardSettingsCheckboxPicker`
 - Icon colors will be preserved if provided
 - added DateFormat as parameter to `CardSettingsDatePicker`
+- made styling a closer match to the new material spec
 
 ## [1.8.2] - 5/5/2020
 

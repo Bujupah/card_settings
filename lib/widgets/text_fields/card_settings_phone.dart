@@ -3,13 +3,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 
 import '../../card_settings.dart';
-import '../../models/common_card_field_attributes.dart';
+import '../../interfaces/common_field_properties.dart';
+import '../../interfaces/text_field_properties.dart';
 
 /// This is a phone number field. It's designed for US numbers
 class CardSettingsPhone extends StatelessWidget
-    implements CommonCardFieldAttributes {
+    implements ICommonFieldProperties, ITextFieldProperties {
   CardSettingsPhone({
     Key key,
     this.label: 'Label',
@@ -28,18 +30,22 @@ class CardSettingsPhone extends StatelessWidget
     this.autofocus: false,
     this.obscureText: false,
     this.autocorrect: false,
-    this.autovalidate: false,
+    // this.autovalidate: false,
+    this.autovalidateMode: AutovalidateMode.onUserInteraction,
     this.validator,
     this.onSaved,
     this.onChanged,
     this.controller,
     this.focusNode,
+    this.inputAction,
+    this.inputActionNode,
     this.keyboardType,
     this.style,
     this.maxLengthEnforced: true,
     this.onFieldSubmitted,
     this.inputFormatters,
-    this.showMaterialonIOS = false,
+    this.showMaterialonIOS,
+    this.fieldPadding,
   });
 
   @override
@@ -57,22 +63,21 @@ class CardSettingsPhone extends StatelessWidget
   @override
   final String hintText;
 
-  @override
   final String prefixText;
 
   final int initialValue;
 
   final bool contentOnNewLine;
 
-  final String inputMask = '(000) 000-0000';
-
   final int maxLength;
 
   @override
   final Icon icon;
 
+  @override
   final Widget requiredIndicator;
 
+  @override
   final bool visible;
 
   final bool enabled;
@@ -82,22 +87,33 @@ class CardSettingsPhone extends StatelessWidget
   final bool obscureText;
 
   final bool autocorrect;
-
+/* 
+  @override
   final bool autovalidate;
+ */
+  @override
+  final AutovalidateMode autovalidateMode;
 
+  @override
   final FormFieldValidator<int> validator;
 
+  @override
   final FormFieldSetter<int> onSaved;
 
+  @override
   final ValueChanged<int> onChanged;
 
   final TextEditingController controller;
 
   final FocusNode focusNode;
 
+  final FocusNode inputActionNode;
+
   final TextInputType keyboardType;
 
   final TextStyle style;
+
+  final TextInputAction inputAction;
 
   final bool maxLengthEnforced;
 
@@ -105,6 +121,10 @@ class CardSettingsPhone extends StatelessWidget
 
   final List<TextInputFormatter> inputFormatters;
 
+  @override
+  final EdgeInsetsGeometry fieldPadding;
+
+  @override
   final bool showMaterialonIOS;
 
   @override
@@ -115,9 +135,10 @@ class CardSettingsPhone extends StatelessWidget
       labelWidth: labelWidth,
       labelAlign: labelAlign,
       contentAlign: contentAlign,
-      initialValue: initialValue.toString(),
+      initialValue: initialValue != null
+          ? formatAsPhoneNumber(initialValue.toString())
+          : "",
       contentOnNewLine: contentOnNewLine,
-      inputMask: inputMask,
       maxLength: maxLength,
       hintText: hintText,
       prefixText: prefixText,
@@ -129,33 +150,42 @@ class CardSettingsPhone extends StatelessWidget
       showMaterialonIOS: showMaterialonIOS,
       obscureText: obscureText,
       autocorrect: autocorrect,
-      autovalidate: autovalidate,
+      //autovalidate: autovalidate,
+      autovalidateMode: autovalidateMode,
       validator: _safeValidator,
       onSaved: _safeOnSaved,
       onChanged: _safeOnChanged,
       controller: controller,
       focusNode: focusNode,
+      fieldPadding: fieldPadding,
+      inputActionNode: inputActionNode,
       keyboardType:
           keyboardType ?? TextInputType.numberWithOptions(decimal: false),
       style: style,
       maxLengthEnforced: maxLengthEnforced,
       onFieldSubmitted: onFieldSubmitted,
-      inputFormatters: inputFormatters,
+      inputFormatters: [
+        PhoneInputFormatter(),
+      ],
+      inputAction: inputAction,
     );
   }
 
   String _safeValidator(String value) {
     if (validator == null) return null;
-    return validator(intelligentCast<int>(value));
+    var numbers = toNumericString(value);
+    return validator(intelligentCast<int>(numbers));
   }
 
   void _safeOnSaved(String value) {
     if (onSaved == null) return;
-    onSaved(intelligentCast<int>(value));
+    var numbers = toNumericString(value);
+    onSaved(intelligentCast<int>(numbers));
   }
 
   void _safeOnChanged(String value) {
     if (onChanged == null) return;
-    onChanged(intelligentCast<int>(value));
+    var numbers = toNumericString(value);
+    onChanged(intelligentCast<int>(numbers));
   }
 }
